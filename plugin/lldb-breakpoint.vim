@@ -5,12 +5,37 @@ let g:sign_bp_dict={} " Define empty global dictionary for sign ID and breakpoin
 
 " Global settings - sensible defaults can be set here
 let g:lldb_dir="/Users/nico8506/.lldb/"
-let g:lldb_breakpoint_count=1
 let g:lldb_executable="runtimecore_testd"
 let g:lldb_breakpoint_group="default"
+let g:globals_save_path="/Users/nico8506/.config/nvim/plugged/vim-lldb-breakpoints/vim-lldb-breakpoint-globals.vim"
 
-" Remove breakpoing signs for existing LLDB breakpoints
-function RemoveBreakpointSigns()
+" Global script variables
+let g:lldb_breakpoint_count=1 " Used to set sign ID
+
+" Save global settings to file
+function SaveGlobalSettings()
+  execute "redir! > " . g:globals_save_path
+  echo g:lldb_dir
+  echo g:lldb_executable
+  echo g:lldb_breakpoint_group
+  echo g:globals_save_path
+  execute "redir END"
+endfunction
+autocmd VimLeave * :exec SaveGlobalSettings()
+
+" Load global settings from saved file
+function LoadGlobalSettings()
+  let l:globals_list=readfile(g:globals_save_path)
+  echo globals_list
+  let g:lldb_dir=globals_list[1]
+  let g:lldb_executable=globals_list[2]
+  let g:lldb_breakpoint_group=globals_list[3]
+  let g:globals_save_path=globals_list[4]
+endfunction
+autocmd VimEnter * :exec LoadGlobalSettings()
+
+" Remove breakpoint signs for existing LLDB breakpoints
+function! RemoveBreakpointSigns()
   for id in values(g:sign_bp_dict)
     execute printf("sign unplace %d", id)
   endfor
@@ -20,7 +45,7 @@ endfunction
 autocmd BufLeave * :exec RemoveBreakpointSigns()
 
 " Add breakpoint signs for existing LLDB breakpoints
-function AddBreakpointSigns()
+function! AddBreakpointSigns()
   let l:output_file_name=g:lldb_dir . ".breakpoints_" . g:lldb_executable . "_" . g:lldb_breakpoint_group
   let l:breakpoint_list=readfile(output_file_name)
   for breakpoint in breakpoint_list " Identify if breakpoint is currently set for this file
@@ -42,7 +67,7 @@ endfunction
 autocmd BufEnter * :exec AddBreakpointSigns()
 
 " Set the directory for your .lldb folder directory
-function SetLLDBDir(lldb_dir)
+function! SetLLDBDir(lldb_dir)
   let g:lldb_dir=a:lldb_dir
   for id in values(g:sign_bp_dict)
     execute printf("sign unplace %d", id)
@@ -51,7 +76,7 @@ function SetLLDBDir(lldb_dir)
 endfunction
 
 " Set the current executable to set LLDB breakpoints for
-function SetLLDBExecutable(executable)
+function! SetLLDBExecutable(executable)
   let g:lldb_executable = a:executable
   for id in values(g:sign_bp_dict)
     execute printf("sign unplace %d", id)
@@ -60,7 +85,7 @@ function SetLLDBExecutable(executable)
 endfunction
 
 " Set the group identifier to be used for the breakpoints
-function SetLLDBBreakpointGroup(breakpoint_group)
+function! SetLLDBBreakpointGroup(breakpoint_group)
   let g:lldb_breakpoint_group = a:breakpoint_group
   for id in values(g:sign_bp_dict)
     execute printf("sign unplace %d", id)
@@ -69,7 +94,7 @@ function SetLLDBBreakpointGroup(breakpoint_group)
 endfunction
 
 " Set LLDB breakpoint - uses previously set executable and breakpoint group
-function SetLLDBBreakpoint()
+function! SetLLDBBreakpoint()
   let l:output_file_name=g:lldb_dir . ".breakpoints_" . g:lldb_executable . "_" . g:lldb_breakpoint_group
   let l:file_name=expand("%:t")
   let l:file_line=line(".")
@@ -116,4 +141,6 @@ endfunction
 " Plugin Mappings
 nnoremap <leader>ba :call SetLLDBBreakpoint()<cr>
 nnoremap <leader>bd :call RemoveLLDBBreakpoint()<cr>
+
+
 
