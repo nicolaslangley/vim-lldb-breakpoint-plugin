@@ -45,7 +45,7 @@ function! RemoveBreakpointSigns()
   let g:sign_bp_dict={}
 endfunction
 " Autocommand to check for and remove breakpoint signs when closing buffer
-autocmd BufLeave * :exec RemoveBreakpointSigns()
+autocmd BufWinLeave * :exec RemoveBreakpointSigns()
 
 " Add breakpoint signs for existing LLDB breakpoints
 function! AddBreakpointSigns()
@@ -70,7 +70,7 @@ function! AddBreakpointSigns()
   endfor
 endfunction
 " Autocommand to check for and add breakpoint signs on buffer open
-autocmd BufEnter * :exec AddBreakpointSigns()
+autocmd BufWinEnter * :exec AddBreakpointSigns()
 
 " Set the directory for your .lldb folder directory
 function! SetLLDBDir(lldb_dir)
