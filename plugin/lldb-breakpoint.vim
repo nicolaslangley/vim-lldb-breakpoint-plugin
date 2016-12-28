@@ -25,6 +25,9 @@ autocmd VimLeave * :exec SaveGlobalSettings()
 
 " Load global settings from saved file
 function LoadGlobalSettings()
+  if !filereadable(g:globals_save_path)
+    call system("touch " . g:globals_save_path)
+  endif
   let l:globals_list=readfile(g:globals_save_path)
   echo globals_list
   let g:lldb_dir=globals_list[1]
@@ -47,6 +50,9 @@ autocmd BufLeave * :exec RemoveBreakpointSigns()
 " Add breakpoint signs for existing LLDB breakpoints
 function! AddBreakpointSigns()
   let l:output_file_name=g:lldb_dir . ".breakpoints_" . g:lldb_executable . "_" . g:lldb_breakpoint_group
+  if !filereadable(output_file_name)
+    call system("touch " . output_file_name)
+  endif
   let l:breakpoint_list=readfile(output_file_name)
   for breakpoint in breakpoint_list " Identify if breakpoint is currently set for this file
     let l:breakpoint_split=split(split(breakpoint)[1], ":")
@@ -116,6 +122,9 @@ function RemoveLLDBBreakpoint()
   let l:file_name=expand("%:t")
   let l:file_line=line(".")
   let l:breakpoint_name="b " . file_name . ":" . file_line
+  if !filereadable(output_file_name)
+    call system("touch " . output_file_name)
+  endif
   let l:breakpoint_list=readfile(output_file_name)
   let l:list_counter = 0
   let l:breakpoint_found = 0
